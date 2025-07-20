@@ -1,0 +1,52 @@
+# PanpaOS-64 Makefile (AI tarafından yazıldı)
+
+AS=nasm
+CC=g++
+LD=ld
+CFLAGS=-m64 -ffreestanding -O2 -nostdlib -fno-builtin -fno-exceptions -fno-rtti
+LDFLAGS=-Ttext 0x100000 --oformat binary
+
+OBJS=boot64.o kernel64_core.o scheduler64.o io64.o fs64_core.o interrupt64.o timer64.o console64.o process64.o syscalls64.o
+
+all: PanpaOS-64.bin
+
+boot64.o: boot64.asm
+	$(AS) -f bin boot64.asm -o boot64.o
+
+kernel64_core.o: kernel64_core.cpp
+	$(CC) $(CFLAGS) -c kernel64_core.cpp -o kernel64_core.o
+
+scheduler64.o: scheduler64.cpp
+	$(CC) $(CFLAGS) -c scheduler64.cpp -o scheduler64.o
+
+io64.o: io64.cpp
+	$(CC) $(CFLAGS) -c io64.cpp -o io64.o
+
+fs64_core.o: fs64_core.cpp
+	$(CC) $(CFLAGS) -c fs64_core.cpp -o fs64_core.o
+
+interrupt64.o: interrupt64.cpp
+	$(CC) $(CFLAGS) -c interrupt64.cpp -o interrupt64.o
+
+timer64.o: timer64.cpp
+	$(CC) $(CFLAGS) -c timer64.cpp -o timer64.o
+
+console64.o: console64.cpp
+	$(CC) $(CFLAGS) -c console64.cpp -o console64.o
+
+process64.o: process64.cpp
+	$(CC) $(CFLAGS) -c process64.cpp -o process64.o
+
+syscalls64.o: syscalls64.cpp
+	$(CC) $(CFLAGS) -c syscalls64.cpp -o syscalls64.o
+
+PanpaOS-64.bin: $(OBJS)
+	cat boot64.o kernel64_core.o scheduler64.o io64.o fs64_core.o interrupt64.o timer64.o console64.o process64.o syscalls64.o > PanpaOS-64.bin
+
+clean:
+	rm -f *.o PanpaOS-64.bin PanpaOS-64.iso
+
+iso: PanpaOS-64.bin
+	mkdir -p isodir/boot
+	cp PanpaOS-64.bin isodir/boot/
+	grub-mkrescue -o PanpaOS-64.iso isodir
